@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <style>
+            canvas {
+                border: 1px solid red;
+            }
+        </style>
+    </head>
+    <body>
+        <script>
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            canvas.width = 800;
+
+            let p1 = { x: 0, y: canvas.height / 2 },
+                c1 = { x: canvas.width / 2, y: -canvas.height / 2 },
+                p2 = { x: canvas.width, y: canvas.height / 2 };
+            function part1() {
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.quadraticCurveTo(c1.x, c1.y, p2.x, p2.y);
+                ctx.stroke();
+            }
+            // part1();
+            // ---
+            function updatePos(start, end, t) {
+                return {
+                    x: start.x + t * (end.x - start.x),
+                    y: start.y + t * (end.y - start.y),
+                };
+            }
+            let t = 0;
+            function computedQuadraticCurve() {
+                let p1_c1 = updatePos(p1, c1, t),
+                    c1_p2 = updatePos(c1, p2, t),
+                    real_point = updatePos(p1_c1, c1_p2, t);
+
+                return real_point;
+            }
+            function clear(type = "clear") {
+                if (type === "clear")
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                else if (type === "tail") {
+                    ctx.save();
+                    ctx.fillStyle = "rgba(255,255,255,0.3)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.restore();
+                }
+            }
+            function part2() {
+                clear("tail");
+
+                ctx.beginPath();
+                const { x, y } = computedQuadraticCurve();
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                t += 0.003;
+                if (t >= 1) t = 0;
+                requestAnimationFrame(part2);
+            }
+            // part2();
+            // ---
+            let step = 0.001;
+            function createPointList() {
+                let pointList = [];
+                while (t <= 1) {
+                    pointList.push(computedQuadraticCurve());
+                    t += step;
+                }
+                return pointList;
+            }
+            function gradientColor(ctx, p1, p2) {
+                let gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+                gradient.addColorStop(0, "rgba(0,0,0,0)");
+                gradient.addColorStop(1, "rgba(0,0,0,1)");
+                return gradient;
+            }
+            let pointList = createPointList(),
+                left_index = 0;
+            function part3() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.beginPath();
+
+                let p = pointList[left_index];
+                ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                left_index++;
+                if (left_index > pointList.length - 1) left_index = 0;
+                requestAnimationFrame(part3);
+            }
+            // part3();
+            // ---
+            let len = 60;
+            function part3_2() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.beginPath();
+
+                let start_p = pointList[left_index],
+                    end_i =
+                        left_index + len >= pointList.length - 1
+                            ? pointList.length - 1
+                            : left_index + len;
+                ctx.moveTo(start_p.x, start_p.y);
+                for (let i = left_index; i < end_i; i++) {
+                    let p = pointList[i];
+                    if (p) ctx.lineTo(p.x, p.y);
+                }
+                ctx.lineCap = "round";
+                ctx.lineWidth = 4;
+
+                let gradient = ctx.createLinearGradient(
+                    start_p.x,
+                    start_p.y,
+                    pointList[end_i - 1].x,
+                    pointList[end_i - 1].y
+                );
+                gradient.addColorStop(0, "rgba(0,0,0,0)");
+                gradient.addColorStop(1, "rgba(0,0,0,1)");
+                ctx.strokeStyle = gradient;
+
+                ctx.stroke();
+                left_index += len;
+                if (left_index > pointList.length - 1) left_index = 0;
+
+                // setInterval(() => part3_2(), 1000);
+            }
+            // part3_2();
+            document.body.appendChild(canvas);
+        </script>
+    </body>
+</html>
