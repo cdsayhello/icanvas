@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
+        <title>直飞线基础</title>
         <style>
             canvas {
                 border: 1px solid red;
@@ -89,29 +89,45 @@
             // ---
             let start4 = { x: 0, y: 100 },
                 end4 = { x: 200, y: 100 },
-                gradient_t = 0;
+                gradient_t_start = 0,
+                gradient_t_end = 0,
+                gradient_t_end_more = 0;
             function part4() {
+                ctx.save();
                 ctx.clearRect(0, 90, canvas.width, 20);
-
+                ctx.beginPath();
                 ctx.moveTo(start4.x, start4.y);
                 ctx.lineTo(end4.x, end4.y);
-
                 ctx.lineWidth = 4;
-
                 let gradient = ctx.createLinearGradient(
                     start4.x,
                     start4.y,
                     end4.x,
                     end4.y
                 );
-                gradient.addColorStop(gradient_t, "rgba(0,0,0,0)");
-                gradient.addColorStop(1, "rgba(0,0,0,1)");
+                gradient.addColorStop(gradient_t_start, "rgba(0,0,0,0)");
+                gradient.addColorStop(gradient_t_end, "rgba(0,0,0,1)");
+                gradient.addColorStop(gradient_t_end_more, "rgba(0,0,0,0)");
                 ctx.strokeStyle = gradient;
                 ctx.stroke();
+                ctx.restore();
 
-                gradient_t += 0.01;
-                if (gradient_t >= 1) gradient_t = 0;
+                let len = 0.3,
+                    v = 0.01;
+                gradient_t_start += v;
+                gradient_t_end += v;
+                if (gradient_t_end <= len) gradient_t_start = 0;
+                if (gradient_t_start >= 1 - len) gradient_t_end = 1;
 
+                if (gradient_t_start >= 1 && gradient_t_end >= 1) {
+                    gradient_t_start = 0;
+                    gradient_t_end = 0;
+                }
+                if (gradient_t_end >= 1 - v) {
+                    gradient_t_end_more = 1;
+                } else {
+                    gradient_t_end_more = gradient_t_end + v;
+                }
                 requestAnimationFrame(part4);
             }
             part4();
