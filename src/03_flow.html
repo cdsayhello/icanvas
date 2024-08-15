@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <script>
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+
+            function flow1(offset = 0) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.setLineDash([15, 4]);
+                ctx.lineDashOffset = offset;
+                ctx.moveTo(0, 50);
+                ctx.lineTo(300, 50);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function createPattern() {
+                const offcanvas = document.createElement("canvas");
+                const offctx = offcanvas.getContext("2d");
+
+                offcanvas.width = 10;
+                offcanvas.height = 10;
+
+                offctx.moveTo(0, offcanvas.height);
+                offctx.lineTo(offcanvas.width / 2, 0);
+                offctx.lineTo(offcanvas.width, offcanvas.height);
+                offctx.fillStyle = "red";
+                offctx.fill();
+                return offcanvas;
+            }
+
+            let img = createPattern();
+            // fill storke 都是根据当前绘图上下文矩阵进行的，translate进行了矩阵平移，所以图案变更了，但是路径没变。
+            function flow2(offset) {
+                ctx.save();
+
+                ctx.moveTo(0, 0);
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.strokeStyle = ctx.createPattern(img, "repeat");
+                ctx.lineWidth = 10;
+                ctx.translate(offset, offset);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            let offset = 0;
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                offset += 1;
+                // flow1(offset);
+
+                flow2(offset);
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        </script>
+    </body>
+</html>
