@@ -4,62 +4,65 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
+        <style>
+            canvas {
+                border: 1px solid red;
+            }
+        </style>
     </head>
     <body>
         <canvas id="canvas"></canvas>
         <script>
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
+            canvas.width = 400;
+            canvas.height = 400;
 
-            function flow1(offset = 0) {
-                ctx.save();
+            const opt = {
+                offset: 0,
+                lineDash: [15, 4],
+            };
+
+            function linePath() {
                 ctx.beginPath();
-                ctx.setLineDash([15, 4]);
-                ctx.lineDashOffset = offset;
                 ctx.moveTo(0, 50);
-                ctx.lineTo(300, 50);
+                ctx.lineTo(canvas.width, 50);
                 ctx.stroke();
-                ctx.restore();
             }
 
-            function createPattern() {
-                const offcanvas = document.createElement("canvas");
-                const offctx = offcanvas.getContext("2d");
-
-                offcanvas.width = 10;
-                offcanvas.height = 10;
-
-                offctx.moveTo(0, offcanvas.height);
-                offctx.lineTo(offcanvas.width / 2, 0);
-                offctx.lineTo(offcanvas.width, offcanvas.height);
-                offctx.fillStyle = "red";
-                offctx.fill();
-                return offcanvas;
+            function boxPath() {
+                ctx.beginPath();
+                ctx.rect(10, 80, 100, 100);
+                ctx.stroke();
             }
 
-            let img = createPattern();
-            // fill storke 都是根据当前绘图上下文矩阵进行的，translate进行了矩阵平移，所以图案变更了，但是路径没变。
-            function flow2(offset) {
-                ctx.save();
-
-                ctx.moveTo(0, 0);
-                ctx.lineTo(canvas.width, canvas.height);
-                ctx.strokeStyle = ctx.createPattern(img, "repeat");
-                ctx.lineWidth = 10;
-                ctx.translate(offset, offset);
+            function curvePath() {
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - 50);
+                ctx.bezierCurveTo(
+                    100,
+                    canvas.height - 100,
+                    canvas.width - 100,
+                    canvas.height,
+                    canvas.width,
+                    canvas.height - 50
+                );
                 ctx.stroke();
+            }
 
-                ctx.restore();
+            function flow(offset = 0) {
+                ctx.setLineDash(opt.lineDash);
+                ctx.lineDashOffset = offset;
+                linePath();
+                boxPath();
+                curvePath();
             }
 
             let offset = 0;
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 offset += 1;
-                // flow1(offset);
-
-                flow2(offset);
-
+                flow(offset);
                 requestAnimationFrame(animate);
             }
             animate();
